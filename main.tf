@@ -1,3 +1,18 @@
+data "aws_ami" "ubuntu_2404" {
+  most_recent = true
+  owners      = ["099720109477"] # Canonical
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd*/ubuntu-noble-24.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr
 
@@ -107,7 +122,7 @@ resource "aws_eip" "web_eip" {
 }
 
 resource "aws_instance" "web" {
-  ami               = "ami-02d26659fd82cf299"
+  ami               = data.aws_ami.ubuntu_2404.id
   instance_type     = "t2.micro"
   availability_zone = var.availability_zone
   key_name          = var.key_name
