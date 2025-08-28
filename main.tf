@@ -9,13 +9,48 @@ terraform {
   }
 }
 
+variable "aws_region" {
+  type        = string
+  description = "AWS region to deploy into"
+  default     = "ap-south-1"
+}
+
+variable "vpc_cidr" {
+  type        = string
+  description = "CIDR for the VPC"
+  default     = "10.0.0.0/16"
+}
+
+variable "public_subnet_cidr" {
+  type        = string
+  description = "CIDR for the public subnet (must be inside vpc_cidr)"
+  default     = "10.0.1.0/24"
+}
+
+variable "availability_zone" {
+  type        = string
+  description = "AZ for the subnet/instance"
+  default     = "ap-south-1a"
+}
+
+variable "key_name" {
+  type        = string
+  description = "Existing EC2 key pair name"
+  default     = "main_key"
+}
+
+variable "static_private_ip" {
+  type        = string
+  description = "Static private IP for the ENI"
+  default     = "10.0.1.50"
+}
+
 provider "aws" {
-  region = "ap-south-1"
+  region = var.aws_region
 }
 
 resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
-
+  cidr_block = var.vpc_cidr
   tags = {
     Name = "web-vpc"
   }
@@ -23,8 +58,8 @@ resource "aws_vpc" "main" {
 
 resource "aws_subnet" "public" {
   vpc_id            = aws_vpc.main.id
-  cidr_block        = "10.0.1.0/24"
-  availability_zone = "ap-south-1a"
+  cidr_block        = var.public_subnet_cidr
+  availability_zone = var.availability_zone
 
   tags = {
     Name = "web-public-subnet"
@@ -100,7 +135,7 @@ resource "aws_security_group" "allow_web" {
 
 resource "aws_network_interface" "web_eni" {
   subnet_id       = aws_subnet.public.id
-  private_ips     = ["10.0.1.50"]
+  private_ips     = [var.static_private_ip]
   security_groups = [aws_security_group.allow_web.id]
 
   tags = {
@@ -111,8 +146,9 @@ resource "aws_network_interface" "web_eni" {
 resource "aws_eip" "web_eip" {
   domain                    = "vpc"
   network_interface         = aws_network_interface.web_eni.id
-  associate_with_private_ip = "10.0.1.50"
-  depends_on                = [aws_internet_gateway.igw]
+  associate_with_private_ip = var.static_private_ip
+
+  depends_on = [aws_internet_gateway.igw]
 
   tags = {
     Name = "web-eip"
@@ -122,8 +158,8 @@ resource "aws_eip" "web_eip" {
 resource "aws_instance" "web" {
   ami               = "ami-02d26659fd82cf299"
   instance_type     = "t2.micro"
-  availability_zone = "ap-south-1a"
-  key_name          = "my-key"
+  availability_zone = var.availability_zone
+  key_name          = var.key_name
 
   network_interface {
     device_index         = 0
