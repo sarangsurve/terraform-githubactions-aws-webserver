@@ -35,7 +35,7 @@ resource "aws_route_table" "this" {
   }
 
   tags = {
-    Name = "${replace(lower(var.project_name), " ", "-")}-public-rt"
+    Name = format("%s-public-rt", replace(lower(var.project_name), " ", "-"))
   }
 }
 
