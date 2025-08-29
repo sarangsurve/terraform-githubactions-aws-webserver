@@ -45,3 +45,24 @@ resource "aws_instance" "web" {
     Name = "apache-web-server"
   }
 }
+
+resource "aws_network_interface" "web_eni" {
+  subnet_id       = var.subnet_id
+  private_ips     = [var.static_private_ip]
+  security_groups = [var.security_group_id]
+
+  tags = {
+    Name = "web-eni"
+  }
+}
+
+resource "aws_eip" "web_eip" {
+  domain                    = "vpc"
+  network_interface         = aws_network_interface.web_eni.id
+  associate_with_private_ip = var.static_private_ip
+  depends_on                = [aws_instance.web]
+
+  tags = {
+    Name = "web-eip"
+  }
+}

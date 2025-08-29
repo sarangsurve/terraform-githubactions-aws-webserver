@@ -1,4 +1,4 @@
 output "http_url" {
-  value       = "http://${aws_eip.web_eip.public_ip}:80"
-  description = "Convenient HTTP URL"
+  value       = "http://${module.ec2.web_eip}:80"
+  description = "Public URL of the web server"
 }

@@ -1,7 +1,7 @@
 resource "aws_security_group" "allow_web" {
   name        = "allow_web_traffic"
   description = "Allow HTTP, HTTPS, SSH"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = var.vpc_id
 
   ingress {
     description = "HTTP"

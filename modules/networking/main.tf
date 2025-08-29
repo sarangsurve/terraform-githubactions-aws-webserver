@@ -9,9 +9,9 @@ resource "aws_vpc" "main" {
 }
 
 resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.main.id
-  cidr_block              = var.public_subnet_cidr
-  availability_zone       = var.availability_zone
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = var.public_subnet_cidr
+  availability_zone = var.availability_zone
 
   tags = {
     Name = "web-public-subnet"
@@ -42,24 +42,4 @@ resource "aws_route_table" "public" {
 resource "aws_route_table_association" "public_assoc" {
   subnet_id      = aws_subnet.public.id
   route_table_id = aws_route_table.public.id
-}
-
-resource "aws_network_interface" "web_eni" {
-  subnet_id       = aws_subnet.public.id
-  private_ips     = [var.static_private_ip]
-  security_groups = [aws_security_group.allow_web.id]
-
-  tags = {
-    Name = "web-eni"
-  }
-}
-
-resource "aws_eip" "web_eip" {
-  domain                    = "vpc"
-  network_interface         = aws_network_interface.web_eni.id
-  associate_with_private_ip = var.static_private_ip
-
-  tags = {
-    Name = "web-eip"
-  }
 }
