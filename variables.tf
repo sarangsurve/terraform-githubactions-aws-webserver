@@ -7,30 +7,64 @@ variable "aws_region" {
 variable "vpc_cidr" {
   type        = string
   description = "CIDR for the VPC"
-  default     = "10.0.0.0/16"
 }
 
 variable "public_subnet_cidr" {
   type        = string
   description = "CIDR for the public subnet (must be inside vpc_cidr)"
-  default     = "10.0.1.0/24"
 }
 
-variable "availability_zone" {
+variable "key_pair_name" {
   type        = string
-  description = "AZ for the subnet/instance"
-  default     = "ap-south-1a"
-}
-
-variable "key_name" {
-  type        = string
-  description = "Existing EC2 key pair name"
-  default     = "main_key"
+  description = "SSH key pair name to use for the EC2 instance"
 }
 
 # Must be inside the public_subnet_cidr and not a reserved IP
 variable "static_private_ip" {
   type        = string
   description = "Static private IP for the ENI"
-  default     = "10.0.1.50"
+}
+
+variable "instance_name" {
+  description = "EC2 instance type"
+  type        = string
+}
+
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t2.micro"
+}
+
+variable "volume_size" {
+  description = "Volume size"
+  type        = number
+  default     = 8
+}
+
+variable "volume_type" {
+  description = "Volume size"
+  type        = string
+  default     = "gp3"
+}
+
+variable "project_name" {
+  description = "Project name tag"
+  type        = string
+  default     = "Terraform Project"
+}
+
+variable "usecase_type" {
+  type    = string
+  default = "Basic"
+}
+
+variable "allowed_incoming_ip_cidrs" {
+  type    = list(string)
+  default = ["0.0.0.0/0"] # change this in production!
+}
+
+variable "allowed_outgoing_ip_cidrs" {
+  type    = list(string)
+  default = ["0.0.0.0/0"] # change this in production!
 }

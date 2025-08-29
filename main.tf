@@ -1,136 +1,74 @@
-data "aws_ami" "ubuntu_2404" {
-  most_recent = true
-  owners      = ["099720109477"] # Canonical
-
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd*/ubuntu-noble-24.04-amd64-server-*"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
+provider "aws" {
+  region = var.aws_region
 }
 
-resource "aws_vpc" "main" {
-  cidr_block = var.vpc_cidr
-
-  tags = {
-    Name = "web-vpc"
-  }
+# Get your current public IP
+data "http" "my_ip" {
+  url = "https://checkip.amazonaws.com/"
 }
 
-resource "aws_subnet" "public" {
-  vpc_id            = aws_vpc.main.id
-  cidr_block        = var.public_subnet_cidr
-  availability_zone = var.availability_zone
-
-  tags = {
-    Name = "web-public-subnet"
-  }
+locals {
+  my_ip_cidr = chomp(data.http.my_ip.response_body) == "" ? "0.0.0.0/0" : "${chomp(data.http.my_ip.response_body)}/32"
 }
 
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.main.id
-
-  tags = {
-    Name = "web-igw"
-  }
+module "networking" {
+  source             = "./modules/networking"
+  vpc_cidr           = var.vpc_cidr
+  public_subnet_cidr = var.public_subnet_cidr
+  aws_region         = var.aws_region
+  project_name       = var.project_name
 }
 
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.main.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
-  }
-
-  tags = {
-    Name = "web-public-rt"
-  }
+module "webserver_security_groups" {
+  source       = "./modules/security-groups"
+  vpc_id       = module.networking.vpc_id
+  project_name = var.project_name
+  usecase_type = var.usecase_type
+  ingress_rules = [
+    {
+      description = "SSH"
+      from_port   = 22
+      to_port     = 22
+      protocol    = "tcp"
+      cidr_blocks = [local.my_ip_cidr]
+    },
+    {
+      description = "HTTP"
+      from_port   = 80
+      to_port     = 80
+      protocol    = "tcp"
+      cidr_blocks = var.allowed_incoming_ip_cidrs
+    },
+    {
+      description = "HTTPS"
+      from_port   = 443
+      to_port     = 443
+      protocol    = "tcp"
+      cidr_blocks = var.allowed_incoming_ip_cidrs
+    }
+  ]
+  egress_rules = [
+    {
+      description = "All egress"
+      from_port   = 0
+      to_port     = 0
+      protocol    = "-1"
+      cidr_blocks = var.allowed_outgoing_ip_cidrs
+    }
+  ]
 }
 
-resource "aws_route_table_association" "public_assoc" {
-  subnet_id      = aws_subnet.public.id
-  route_table_id = aws_route_table.public.id
-}
-
-resource "aws_security_group" "allow_web" {
-  name        = "allow_web_traffic"
-  description = "Allow HTTP, HTTPS, SSH"
-  vpc_id      = aws_vpc.main.id
-
-  ingress {
-    description = "HTTP"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "HTTPS"
-    from_port   = 443
-    to_port     = 443
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "SSH"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    description = "All egress"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "allow_web"
-  }
-}
-
-resource "aws_network_interface" "web_eni" {
-  subnet_id       = aws_subnet.public.id
-  private_ips     = [var.static_private_ip]
-  security_groups = [aws_security_group.allow_web.id]
-
-  tags = {
-    Name = "web-eni"
-  }
-}
-
-resource "aws_eip" "web_eip" {
-  domain                    = "vpc"
-  network_interface         = aws_network_interface.web_eni.id
-  associate_with_private_ip = var.static_private_ip
-
-  depends_on = [aws_internet_gateway.igw]
-
-  tags = {
-    Name = "web-eip"
-  }
-}
-
-resource "aws_instance" "web" {
-  ami               = data.aws_ami.ubuntu_2404.id
-  instance_type     = "t2.micro"
-  availability_zone = var.availability_zone
-  key_name          = var.key_name
-
-  network_interface {
-    device_index         = 0
-    network_interface_id = aws_network_interface.web_eni.id
-  }
+# EC2 Instance for Web Server
+module "web_instance" {
+  source            = "./modules/ec2"
+  key_pair_name     = var.key_pair_name
+  subnet_id         = module.networking.public_subnet_id
+  security_group_id = module.webserver_security_groups.sg_id
+  static_private_ip = var.static_private_ip
+  instance_name     = var.instance_name
+  instance_type     = var.instance_type
+  volume_size       = var.volume_size
+  volume_type       = var.volume_type
 
   user_data = <<-EOF
               #!/bin/bash
@@ -149,10 +87,4 @@ resource "aws_instance" "web" {
               </html>
               EOPAGE
               EOF
-
-  tags = {
-    Name = "apache-web-server"
-  }
-
-  depends_on = [aws_eip.web_eip]
 }

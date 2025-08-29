@@ -1,0 +1,11 @@
+aws_region         = "ap-south-1"
+vpc_cidr           = "10.0.0.0/16"
+public_subnet_cidr = "10.0.1.0/24"
+key_pair_name      = "main_key"
+static_private_ip  = "10.0.1.50"
+instance_type      = "t2.micro"
+volume_size        = 8
+volume_type        = "gp3"
+project_name       = "Webserver"
+usecase_type       = "Primary"
+instance_name      = "Apache Web Server"
