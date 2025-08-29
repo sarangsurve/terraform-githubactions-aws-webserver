@@ -6,3 +6,5 @@ static_private_ip  = "10.0.1.50"
 instance_type      = "t2.micro"
 volume_size        = 8
 volume_type        = "gp3"
+project_name       = "Webserver"
+usecase_type       = "Primary"

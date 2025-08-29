@@ -49,7 +49,17 @@ variable "project_name" {
   default     = "Terraform Project"
 }
 
-variable "allowed_ip_cidrs" {
+variable "usecase_type" {
+  type    = string
+  default = "Basic"
+}
+
+variable "allowed_incoming_ip_cidrs" {
+  type    = list(string)
+  default = ["0.0.0.0/0"] # change this in production!
+}
+
+variable "allowed_outgoing_ip_cidrs" {
   type    = list(string)
   default = ["0.0.0.0/0"] # change this in production!
 }
