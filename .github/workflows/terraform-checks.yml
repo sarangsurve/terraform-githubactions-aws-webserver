@@ -6,26 +6,34 @@ on:
       - main
   pull_request:
 
+permissions:
+  contents: read  # only need read access to checkout code
+  id-token: write # only needed if using OIDC for cloud auth
+
 jobs:
-  terraform:
+  terraform-checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.3.0"
 
       # --- INIT (required for providers) ---
       - name: Terraform Init
         run: terraform init -input=false
 
-      # --- FAST CHECKS (always run) ---
+      # --- FORMAT & VALIDATION ---
       - name: Terraform Format Check
         run: terraform fmt -recursive -check
 
       - name: Terraform Validate
         run: terraform validate
 
+      # --- LINT ---
       - name: Install TFLint
         uses: terraform-linters/setup-tflint@v4
 
