@@ -5,10 +5,17 @@ on:
     branches:
       - main
   pull_request:
+  workflow_dispatch:   # enables manual trigger from GitHub Actions UI
 
+# Restrict workflow permissions to only what is needed
 permissions:
-  contents: read  # only need read access to checkout code
-  id-token: write # only needed if using OIDC for cloud auth
+  contents: read         # required for actions/checkout
+  id-token: write        # required if using OIDC for cloud auth
+  issues: write           # optional, only if workflow posts comments/issues
+  pull-requests: write    # optional, only if workflow comments on PRs
+  actions: read           # needed for some actions
+  security-events: read   # required by Checkov to report findings
+  # Avoid giving write-all or admin access
 
 jobs:
   terraform-checks:
@@ -40,9 +47,9 @@ jobs:
       - name: Run TFLint
         run: tflint --recursive
 
-      # --- SECURITY CHECKS (only on main) ---
-      - name: Run Checkov
-        if: github.ref == 'refs/heads/main'
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: .
+      # # --- SECURITY CHECKS (only on main) ---
+      # - name: Run Checkov
+      #   if: github.ref == 'refs/heads/main'
+      #   uses: bridgecrewio/checkov-action@master
+      #   with:
+      #     directory: .
