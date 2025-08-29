@@ -58,7 +58,7 @@ module "webserver_security_groups" {
   ]
 }
 
-# EC2 Instance for GitHub Actions Runner
+# EC2 Instance for Web Server
 module "web_instance" {
   source            = "./modules/ec2"
   key_pair_name     = var.key_pair_name
