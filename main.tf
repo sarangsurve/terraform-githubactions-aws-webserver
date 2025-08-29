@@ -16,6 +16,7 @@ module "networking" {
   vpc_cidr           = var.vpc_cidr
   public_subnet_cidr = var.public_subnet_cidr
   aws_region         = var.aws_region
+  project_name       = var.project_name
 }
 
 module "webserver_security_groups" {
