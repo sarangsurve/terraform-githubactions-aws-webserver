@@ -25,6 +25,6 @@ resource "aws_security_group" "this" {
     }
   }
   tags = {
-    Name = "${replace(lower(var.project_name), " ", "-")}-${replace(lower(var.usecase_type), " ", "-")}-sg"
+    Name = format("%s-%s-sg", replace(lower(var.project_name), " ", "-"), replace(lower(var.usecase_type), " ", "-"))
   }
 }

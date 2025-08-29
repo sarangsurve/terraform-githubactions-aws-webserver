@@ -32,7 +32,7 @@ resource "aws_instance" "this" {
   user_data = var.user_data
 
   tags = {
-    Name = "${replace(lower(var.instance_name), " ", "-")}"
+    Name = replace(lower(var.instance_name), " ", "-")
   }
 }
 

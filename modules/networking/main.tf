@@ -4,17 +4,17 @@ resource "aws_vpc" "this" {
   enable_dns_support   = true
 
   tags = {
-    Name = "${replace(lower(var.project_name), " ", "-")}-vpc"
+    Name = format("%s-vpc", replace(lower(var.project_name), " ", "-"))
   }
 }
 
 resource "aws_subnet" "this" {
   vpc_id            = aws_vpc.this.id
   cidr_block        = var.public_subnet_cidr
-  availability_zone = "${var.aws_region}a"
+  availability_zone = format("%sa", var.aws_region)
 
   tags = {
-    Name = "${replace(lower(var.project_name), " ", "-")}-public-subnet"
+    Name = format("%s-public-subnet", replace(lower(var.project_name), " ", "-"))
   }
 }
 
@@ -22,7 +22,7 @@ resource "aws_internet_gateway" "this" {
   vpc_id = aws_vpc.this.id
 
   tags = {
-    Name = "${replace(lower(var.project_name), " ", "-")}-igw"
+    Name = format("%s-igw", replace(lower(var.project_name), " ", "-"))
   }
 }
 
