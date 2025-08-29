@@ -6,9 +6,15 @@ on:
       - main
   pull_request:
 
+# Restrict workflow permissions to only what is needed
 permissions:
-  contents: read  # only need read access to checkout code
-  id-token: write # only needed if using OIDC for cloud auth
+  contents: read         # required for actions/checkout
+  id-token: write        # required if using OIDC for cloud auth
+  issues: write           # optional, only if workflow posts comments/issues
+  pull-requests: write    # optional, only if workflow comments on PRs
+  actions: read           # needed for some actions
+  security-events: read   # required by Checkov to report findings
+  # Avoid giving write-all or admin access
 
 jobs:
   terraform-checks:
