@@ -16,7 +16,7 @@ data "aws_ami" "ubuntu_2404" {
 resource "aws_instance" "web" {
   ami           = data.aws_ami.ubuntu_2404.id
   instance_type = "t2.micro"
-  key_name      = var.key_name
+  key_name      = var.key_pair_name
 
   network_interface {
     device_index         = 0
