@@ -1,5 +1,5 @@
 resource "aws_security_group" "this" {
-  description = "Primary Security Group"
+  description = "Security Group"
   vpc_id      = var.vpc_id
 
   # Dynamic ingress from root module input

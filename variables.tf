@@ -25,6 +25,11 @@ variable "static_private_ip" {
   description = "Static private IP for the ENI"
 }
 
+variable "instance_name" {
+  description = "EC2 instance type"
+  type        = string
+}
+
 variable "instance_type" {
   description = "EC2 instance type"
   type        = string

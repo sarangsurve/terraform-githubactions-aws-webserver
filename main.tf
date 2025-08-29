@@ -57,10 +57,33 @@ module "webserver_security_groups" {
   ]
 }
 
-module "ec2" {
+# EC2 Instance for GitHub Actions Runner
+module "web_instance" {
   source            = "./modules/ec2"
   key_pair_name     = var.key_pair_name
   subnet_id         = module.networking.public_subnet_id
   security_group_id = module.webserver_security_groups.sg_id
   static_private_ip = var.static_private_ip
+  instance_name     = var.instance_name
+  instance_type     = var.instance_type
+  volume_size       = var.volume_size
+  volume_type       = var.volume_type
+
+  user_data = <<-EOF
+              #!/bin/bash
+              apt-get update -y
+              DEBIAN_FRONTEND=noninteractive apt-get install -y apache2
+              systemctl enable apache2
+              systemctl start apache2
+              cat >/var/www/html/index.html <<'EOPAGE'
+              <!doctype html>
+              <html lang="en">
+              <head><meta charset="utf-8"><title>AWS Web Server</title></head>
+              <body style="font-family: sans-serif; padding: 2rem;">
+                <h1>Hello from Apache on EC2</h1>
+                <p>Deployed via Terraform + ENI + EIP in a public subnet.</p>
+              </body>
+              </html>
+              EOPAGE
+              EOF
 }

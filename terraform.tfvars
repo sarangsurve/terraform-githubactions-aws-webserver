@@ -8,3 +8,4 @@ volume_size        = 8
 volume_type        = "gp3"
 project_name       = "Webserver"
 usecase_type       = "Primary"
+instance_name      = "Apache Web Server"
