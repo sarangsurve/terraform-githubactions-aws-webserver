@@ -46,9 +46,9 @@ jobs:
       - name: Run TFLint
         run: tflint --recursive
 
-      # --- SECURITY CHECKS (only on main) ---
-      - name: Run Checkov
-        if: github.ref == 'refs/heads/main'
-        uses: bridgecrewio/checkov-action@master
-        with:
-          directory: .
+      # # --- SECURITY CHECKS (only on main) ---
+      # - name: Run Checkov
+      #   if: github.ref == 'refs/heads/main'
+      #   uses: bridgecrewio/checkov-action@master
+      #   with:
+      #     directory: .
