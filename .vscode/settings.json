@@ -1,0 +1,32 @@
+{
+    "emeraldwalk.runonsave": {
+        "commands": [
+            {
+                // Auto-formatting on save
+                "match": "\\.(tf|tfvars)$",
+                "cmd": "terraform fmt -recursive"
+            },
+            {
+                // Terraform validation (built-in linter)
+                "match": "\\.(tf|tfvars)$",
+                "cmd": "terraform validate"
+            },
+            {
+                // TFLint (linting + best practices)
+                "match": "\\.(tf|tfvars)$",
+                "cmd": "tflint"
+            },
+            {
+                // Checkov (security scanning)
+                "match": "\\.(tf|tfvars)$",
+                "cmd": "checkov -d ."
+            }
+        ]
+    },
+    // Optional: format on save (VSCode native)
+    "editor.formatOnSave": true,
+    // Ensure VS Code uses Terraform’s formatter
+    "[terraform]": {
+        "editor.defaultFormatter": "hashicorp.terraform"
+    }
+}

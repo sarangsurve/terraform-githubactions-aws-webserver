@@ -1,4 +1,4 @@
-## PR Title (Conventional Commit Style)
+## PR Title
 <!-- Example: feat(terraform): add initial AWS webserver infrastructure -->
 
 ---
